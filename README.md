@@ -3,7 +3,7 @@
 This repository contains the source code for my personal portfolio website, built using GitHub Pages.
 
 ## Live Site
-https://yasaman-vallaee.github.io
+https://yasva.github.io
 
 ## About
 The portfolio presents selected academic and personal projects completed during my studies in software engineering and web development.
