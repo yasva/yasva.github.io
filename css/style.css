@@ -291,6 +291,7 @@ h2 {
 .row-meta {
     color: var(--ink-muted);
     text-align: right;
+    white-space: nowrap;
 }
 
 a.row-meta:hover {
