@@ -74,6 +74,13 @@ h1 {
     max-width: 34rem;
 }
 
+.location {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    margin: -0.75rem 0 1.75rem;
+}
+
 .facts {
     margin: 0 0 1.75rem;
     border: 1px solid var(--line);
