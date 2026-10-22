@@ -16,7 +16,8 @@
     <meta property="og:description"
         content="Software engineering student at Mid Sweden University, graduating 2027. Projects, education and contact." />
     <meta name="twitter:card" content="summary" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0e0e0f" />
 
     <link rel="icon"
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%23b30000'/%3E%3Ctext x='32' y='41' font-family='Arial,sans-serif' font-size='26' font-weight='700' fill='%23fff' text-anchor='middle'%3EYV%3C/text%3E%3C/svg%3E" />
@@ -34,22 +35,49 @@
     <main class="page">
 
         <header class="intro">
-            <!-- TODO(Yas): swap the initials for a photo (img/avatar.jpg) if you want one -->
-            <span class="avatar" aria-hidden="true">YV</span>
+            <div class="intro-top">
+                <!-- TODO(Yas): swap the initials for a photo (img/avatar.jpg) if you want one -->
+                <span class="avatar" aria-hidden="true">YV</span>
+                <p class="status">
+                    <span class="status-dot" aria-hidden="true"></span>
+                    <!-- TODO(Yas): e.g. "Open to summer 2027 internships" -->
+                    <span class="todo">[Open to: ROLE, TIMING]</span>
+                </p>
+            </div>
+
             <h1>Yasaman Vallaee</h1>
             <p class="lede">
                 Software engineering student at Mid Sweden University, graduating 2027.
                 <!-- TODO(Yas): one sentence on what you build and want to work on. Only claim what a project below proves. -->
                 <span class="todo">[One sentence: what you build and what you want to work on.]</span>
             </p>
-            <!-- TODO(Yas): replace with your real target, e.g. "Looking for a summer 2027 backend internship" -->
-            <p class="status">
-                <span class="status-dot" aria-hidden="true"></span>
-                <span><span class="todo">[Looking for: ROLE, TIMING]</span> · <span class="todo">[CITY]</span>, Sweden</span>
-            </p>
+
+            <dl class="facts">
+                <div>
+                    <dt>Location</dt>
+                    <dd><span class="todo">[CITY]</span>, Sweden</dd>
+                </div>
+                <div>
+                    <dt>Email</dt>
+                    <dd><a href="mailto:EMAIL@EXAMPLE.COM"><span class="todo">[EMAIL]</span></a></dd>
+                </div>
+                <div>
+                    <dt>Skills</dt>
+                    <dd>
+                        <!-- TODO(Yas): list only skills a project on this page shows -->
+                        <ul class="tags">
+                            <li>Python</li>
+                            <li>HTML</li>
+                            <li>CSS</li>
+                            <li class="todo">[+ skills you can prove]</li>
+                        </ul>
+                    </dd>
+                </div>
+            </dl>
+
             <p class="intro-actions">
-                <a class="button" href="mailto:EMAIL@EXAMPLE.COM">Get in touch</a>
-                <a class="text-link" href="cv.pdf">Download CV</a>
+                <a class="button" href="mailto:EMAIL@EXAMPLE.COM">Let’s talk</a>
+                <a class="button button-ghost" href="cv.pdf">Download CV</a>
             </p>
         </header>
 
