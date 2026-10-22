@@ -14,7 +14,8 @@ body {
     max-width: 900px;
     margin: 0 auto;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 main {
@@ -57,4 +58,10 @@ h2 {
 
 .logo-text {
     font-size: 0.95rem;
+}
+/* Placeholder text that must be replaced before merging */
+.todo {
+    background-color: #fff3a8;
+    color: #222;
+    padding: 0 0.2em;
 }
