@@ -4,12 +4,27 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Yasaman Vallaee | Portfolio</title>
+    <title>Yasaman Vallaee | Software Engineering Student</title>
+    <meta name="description"
+        content="Yasaman Vallaee, software engineering student at Mid Sweden University, graduating June 2027. Projects, education and contact." />
+    <link rel="canonical" href="https://yasva.github.io/" />
 
-    <!-- Exo 2 från Google Fonts -->
+    <!-- Link previews (LinkedIn, Slack, etc.) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://yasva.github.io/" />
+    <meta property="og:title" content="Yasaman Vallaee | Software Engineering Student" />
+    <meta property="og:description"
+        content="Software engineering student at Mid Sweden University, graduating June 2027. Projects, education and contact." />
+    <meta name="twitter:card" content="summary" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#1a1e23" />
+
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%2312f7d6'/%3E%3Ctext x='32' y='41' font-family='Arial,sans-serif' font-size='26' font-weight='700' fill='%231a1e23' text-anchor='middle'%3EYV%3C/text%3E%3C/svg%3E" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="css/style.css" />
 </head>
@@ -17,85 +32,103 @@
 
 <body>
 
-    <header class="hero">
-        <div class="hero-inner">
-            <div class="logo">
-                <span class="logo-mark" aria-hidden="true">YV</span>
-                <span class="logo-text">Yasaman Vallaee</span>
+    <main class="page">
+
+        <header class="intro">
+            <div class="intro-top">
+                <!-- TODO(Yas): swap the initials for a photo (img/avatar.jpg) if you want one -->
+                <span class="avatar" aria-hidden="true">&lt;YV/&gt;</span>
+                <p class="status">
+                    <span class="status-dot" aria-hidden="true"></span>
+                    Open to internships · 2027
+                </p>
             </div>
-        </div>
-    </header>
 
-    <main>
-        <section>
-            <h2>About Me</h2>
-            <p>
-                I am a software engineering student with experience in web development,
-                backend systems, and mobile applications. This portfolio presents selected
-                academic and personal projects.
+            <h1>Yasaman Vallaee</h1>
+            <p class="lede">
+                Software engineering student at Mid Sweden University, graduating June 2027.
+                I want to work across the stack, from the interface to the services behind it.
             </p>
-        </section>
 
-        <section>
-            <h2>Projects</h2>
-            <article>
-                <h3>Conway’s Game of Life</h3>
+            <p class="location">Svedala, near Malmö, Sweden</p>
+            <!-- TODO(Yas): add a facts card (email, skills) once you have a public address and projects that show the skills -->
 
-                <p>
-                    Console-based implementation of Conway’s Game of Life developed as the final
-                    project for the course <em>Programming Fundamentals (DT179G)</em> at
-                    Mid Sweden University.
-                </p>
+            <p class="intro-actions">
+                <a class="button" href="https://www.linkedin.com/in/yas-vallaee" target="_blank"
+                    rel="noopener noreferrer">Let’s talk on LinkedIn</a>
+                <!-- TODO(Yas): add back once a general CV exists:
+                <a class="button button-ghost" href="cv.pdf">Download CV</a> -->
+            </p>
+        </header>
 
-                <p>
-                    The project demonstrates core programming concepts such as data structures,
-                    control flow, modular design, and algorithmic thinking. The simulation follows
-                    Conway’s rules for cellular automata and runs step-by-step in the terminal.
-                </p>
+        <section aria-labelledby="work-heading">
+            <h2 id="work-heading">Work</h2>
 
-                <p>
-                    The implementation was extended incrementally to meet higher grade requirements,
-                    including recursive simulation, loading initial states from file, status logging,
-                    and aging of cells.
-                </p>
-
-                <p>
-                    <strong>Tech:</strong> Python, CLI, Algorithms, Data Structures
-                </p>
-
-                <p>
-                    <strong>Course:</strong> DT179G – Programming Fundamentals (MIUN)
-                </p>
-
-                <p>
-                    <a href="#" target="_blank" rel="noopener noreferrer"
-                        title="View Game of Life project on GitHub">
-                        View project on GitHub
-                    </a>
-                </p>
+            <article class="project">
+                <figure class="project-media">
+                    <!-- Live preview of the rules the project implements. TODO(Yas): replace with a screenshot or GIF of your own program running -->
+                    <canvas id="life" width="1200" height="675" role="img"
+                        aria-label="Animated grid of Conway's Game of Life cells"></canvas>
+                </figure>
+                <div class="project-text">
+                    <h3>Conway’s Game of Life</h3>
+                    <p class="byline">Mid Sweden University · Course project</p>
+                    <dl class="project-facts">
+                        <div>
+                            <dt>Goal</dt>
+                            <dd>Simulate Conway’s cellular automaton step by step in the terminal.</dd>
+                        </div>
+                        <div>
+                            <dt>Built</dt>
+                            <dd>
+                                Configurable world size and generations, preset seed patterns, a recursive
+                                simulation mode, loading start states from file, status logging, and cell aging.
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Stack</dt>
+                            <dd>Python · CLI</dd>
+                        </div>
+                    </dl>
+                    <!-- TODO(Yas): add back once the code is pushed to the repo:
+                    <p>
+                        <a class="text-link" href="https://github.com/yasva/Game-Of-Life" target="_blank"
+                            rel="noopener noreferrer">Source on GitHub ↗</a>
+                    </p> -->
+                </div>
             </article>
         </section>
 
-        <section>
-            <h2>Education</h2>
-            <p>
-                B.Sc. Software Engineering – Mid Sweden University <br />
-                Web Programming – Blekinge Institute of Technology <br /><br />
-                Expected graduation: 2027
-            </p>
+        <section aria-labelledby="education-heading">
+            <h2 id="education-heading">Education</h2>
+            <ul class="rows">
+                <li>
+                    <span class="row-main">B.Sc. Software Engineering, 180 credits<span class="row-sub">Mid Sweden
+                            University</span></span>
+                    <span class="row-meta">June 2027</span>
+                </li>
+            </ul>
         </section>
 
-        <section>
-            <h2>Contact</h2>
-            <p>
-                GitHub:
-                <a href="https://github.com/yasva" target="_blank" rel="noopener noreferrer"
-                    title="Visit my GitHub profile">
-                    GitHub profile
-                </a>
-            </p>
+        <section aria-labelledby="connect-heading">
+            <h2 id="connect-heading">Connect</h2>
+            <!-- TODO(Yas): add an Email row once you have a public address -->
+            <ul class="rows">
+                <li><span class="row-main">LinkedIn</span><a class="row-meta"
+                        href="https://www.linkedin.com/in/yas-vallaee" target="_blank"
+                        rel="noopener noreferrer">yas-vallaee ↗</a></li>
+                <li><span class="row-main">GitHub</span><a class="row-meta" href="https://github.com/yasva"
+                        target="_blank" rel="noopener noreferrer">yasva ↗</a></li>
+            </ul>
         </section>
+
+        <footer class="site-footer">
+            <p>© 2026 Yasaman Vallaee</p>
+        </footer>
+
     </main>
+
+    <script src="js/life.js" defer></script>
 
 </body>
 
