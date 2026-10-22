@@ -1,13 +1,15 @@
 :root {
     color-scheme: dark;
-    --bg: #0e0e0f;
-    --ink: #ededed;
-    --ink-muted: #9a9a9a;
-    --line: #262628;
-    --surface: #18181a;
-    --accent: #ff5c5c;
-    --accent-ink: #0e0e0f;
-    --cell: #ededed;
+    --bg: #1a1e23;
+    --ink: #ffffff;
+    --ink-muted: #a3a8b0;
+    --line: #353a42;
+    --surface: #292f36;
+    --accent: #12f7d6;
+    --accent-soft: #97f9eb;
+    --accent-ink: #1a1e23;
+    --cell: #12f7d6;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
     --column: 640px;
 }
 
@@ -46,17 +48,10 @@ a:focus-visible {
 /* Intro */
 
 .avatar {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 3rem;
-    height: 3rem;
-    border-radius: 999px;
-    background-color: var(--accent);
-    color: var(--accent-ink);
-    font-weight: 600;
-    font-size: 0.9rem;
-    letter-spacing: 0.04em;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 1.1rem;
+    color: var(--accent);
 }
 
 h1 {
@@ -117,6 +112,8 @@ h1 {
 }
 
 .tags li {
+    font-family: var(--mono);
+    color: var(--accent-soft);
     border: 1px solid var(--line);
     border-radius: 999px;
     padding: 0 0.65rem;
@@ -138,7 +135,8 @@ h1 {
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 999px;
-    background-color: #2e9e5b;
+    background-color: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
 }
 
 .intro-actions {
@@ -153,15 +151,14 @@ h1 {
     display: inline-block;
     padding: 0.5rem 1rem;
     border-radius: 999px;
-    background-color: var(--ink);
-    color: var(--bg);
+    background-color: var(--accent);
+    color: var(--accent-ink);
     text-decoration: none;
     font-weight: 500;
 }
 
 .button:hover {
-    background-color: var(--accent);
-    color: var(--accent-ink);
+    background-color: var(--accent-soft);
 }
 
 .button-ghost {
@@ -172,8 +169,8 @@ h1 {
 
 .button-ghost:hover {
     background-color: transparent;
-    color: var(--ink);
-    border-color: var(--ink-muted);
+    color: var(--accent);
+    border-color: var(--accent);
 }
 
 .text-link {
@@ -184,11 +181,13 @@ h1 {
 }
 
 .text-link:hover {
+    color: var(--accent);
     text-decoration-color: currentColor;
 }
 
 /* Placeholder text that must be replaced before merging */
-.todo {
+.todo,
+.tags li.todo {
     background-color: #fff3a8;
     color: #1a1a1a;
     padding: 0 0.2em;
@@ -201,9 +200,10 @@ section {
 }
 
 h2 {
+    font-family: var(--mono);
     font-size: 0.85rem;
     font-weight: 500;
-    color: var(--ink-muted);
+    color: var(--accent);
     margin: 0 0 1.25rem;
 }
 
@@ -287,7 +287,7 @@ h2 {
 }
 
 a.row-meta:hover {
-    color: var(--ink);
+    color: var(--accent);
 }
 
 /* Footer */
