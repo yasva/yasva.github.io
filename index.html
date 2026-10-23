@@ -22,8 +22,8 @@
     <!-- Apply the saved theme before first paint so the page doesn't flash -->
     <script>
         (function () {
-            let choice = 'dark';
-            try { choice = localStorage.getItem('theme') || 'dark'; } catch (e) { }
+            let choice = 'auto';
+            try { choice = localStorage.getItem('theme') || 'auto'; } catch (e) { }
             const light = choice === 'light' ||
                 (choice === 'auto' && window.matchMedia('(prefers-color-scheme: light)').matches);
             document.documentElement.dataset.theme = light ? 'light' : 'dark';
@@ -49,11 +49,26 @@
             <div class="intro-top">
                 <!-- TODO(Yas): swap the initials for a photo (img/avatar.jpg) if you want one -->
                 <span class="avatar" aria-hidden="true">&lt;YV/&gt;</span>
-                <p class="status">
-                    <span class="status-dot" aria-hidden="true"></span>
-                    Open to internships · 2027
-                </p>
+                <label class="theme-select">
+                    <svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <!-- Path is swapped by js/theme.js to match the choice -->
+                        <path d="M3 5h18v11H3zM1 19h22"></path>
+                    </svg>
+                    <select id="theme" aria-label="Color theme">
+                        <option value="dark">Dark</option>
+                        <option value="light">Light</option>
+                        <option value="auto" selected>Auto</option>
+                    </select>
+                    <svg class="theme-chevron" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 9l6 6 6-6"></path>
+                    </svg>
+                </label>
             </div>
+
+            <p class="status">
+                <span class="status-dot" aria-hidden="true"></span>
+                Open to internships · 2027
+            </p>
 
             <h1>Yasaman Vallaee</h1>
             <p class="lede">
@@ -137,14 +152,6 @@
 
         <footer class="site-footer">
             <p>© 2026 Yasaman Vallaee</p>
-            <label class="theme-select">
-                <span>Theme</span>
-                <select id="theme" aria-label="Color theme">
-                    <option value="dark">Dark</option>
-                    <option value="light">Light</option>
-                    <option value="auto">Auto</option>
-                </select>
-            </label>
         </footer>
 
     </main>
