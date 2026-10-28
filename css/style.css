@@ -367,6 +367,10 @@ a.row-meta:hover {
     color: var(--accent);
 }
 
+.section-more {
+    margin: 1rem 0 0;
+}
+
 /* Footer */
 
 .site-footer {
