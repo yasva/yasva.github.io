@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CV | Yasaman Vallaee</title>
+    <meta name="description"
+        content="CV for Yasaman Vallaee, software engineering student at Mid Sweden University with four years of IT support experience." />
+    <link rel="canonical" href="https://yasva.github.io/cv" />
+
+    <meta property="og:type" content="profile" />
+    <meta property="og:url" content="https://yasva.github.io/cv" />
+    <meta property="og:title" content="CV | Yasaman Vallaee" />
+    <meta property="og:description"
+        content="Software engineering student at Mid Sweden University, graduating June 2027, with four years of IT support experience." />
+    <meta name="twitter:card" content="summary" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#1a1e23" />
+
+    <!-- Apply the saved theme before first paint so the page doesn't flash -->
+    <script>
+        (function () {
+            let choice = 'auto';
+            try { choice = localStorage.getItem('theme') || 'auto'; } catch (e) { }
+            const light = choice === 'light' ||
+                (choice === 'auto' && window.matchMedia('(prefers-color-scheme: light)').matches);
+            document.documentElement.dataset.theme = light ? 'light' : 'dark';
+        })();
+    </script>
+
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%2312f7d6'/%3E%3Ctext x='32' y='41' font-family='Arial,sans-serif' font-size='26' font-weight='700' fill='%231a1e23' text-anchor='middle'%3EYV%3C/text%3E%3C/svg%3E" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+
+<body>
+
+    <main class="page cv">
+
+        <header class="intro">
+            <div class="intro-top no-print">
+                <a class="avatar back-link" href="./">&lt;YV/&gt;</a>
+                <label class="theme-select">
+                    <svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <!-- Path is swapped by js/theme.js to match the choice -->
+                        <path d="M3 5h18v11H3zM1 19h22"></path>
+                    </svg>
+                    <select id="theme" aria-label="Color theme">
+                        <option value="dark">Dark</option>
+                        <option value="light">Light</option>
+                        <option value="auto" selected>Auto</option>
+                    </select>
+                    <svg class="theme-chevron" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 9l6 6 6-6"></path>
+                    </svg>
+                </label>
+            </div>
+
+            <h1>Yasaman Vallaee</h1>
+            <p class="cv-title">Software Engineering Student · IT Support Experience · Svedala, Sweden</p>
+            <p class="cv-contact">
+                <a href="mailto:kontakt.yvallaee@gmail.com">kontakt.yvallaee@gmail.com</a>
+                <a href="https://yasva.github.io">yasva.github.io</a>
+                <a href="https://www.linkedin.com/in/yas-vallaee">linkedin.com/in/yas-vallaee</a>
+                <a href="https://github.com/yasva">github.com/yasva</a>
+            </p>
+
+            <p class="intro-actions no-print">
+                <button class="button" type="button" id="print-cv">Save as PDF</button>
+            </p>
+        </header>
+
+        <section aria-labelledby="profile-heading">
+            <h2 id="profile-heading">Profile</h2>
+            <p>
+                Software engineering student with four years of IT support alongside case work. I have
+                supported users on site and remotely, troubleshot computers and software in Windows
+                environments, managed accounts and permissions in Active Directory and handled tickets in
+                Jira. I hold a bachelor’s degree from Lund University and will graduate in software
+                engineering in June 2027. I’m open to roles in software development as well as IT support
+                and system administration. I can start in June 2027 and am happy to discuss an earlier start.
+            </p>
+        </section>
+
+        <section aria-labelledby="experience-heading">
+            <h2 id="experience-heading">Experience</h2>
+
+            <article class="cv-entry">
+                <div class="cv-entry-head">
+                    <h3>Insurance Investigator<span class="row-sub">Unionens arbetslöshetskassa, Malmö · on
+                            study leave since Jan 2026</span></h3>
+                    <span class="row-meta">Feb 2023 – present</span>
+                </div>
+                <ul>
+                    <li>Assess eligibility for unemployment benefits in the internal case system</li>
+                    <li>Support members by phone with login, navigation and features in the self-service portal</li>
+                    <li>Answer questions about claims and case handling by phone</li>
+                </ul>
+            </article>
+
+            <article class="cv-entry">
+                <div class="cv-entry-head">
+                    <h3>Claims Administrator &amp; IT Support (20%)<span class="row-sub">Kommunals
+                            arbetslöshetskassa, Lund</span></h3>
+                    <span class="row-meta">Dec 2018 – Feb 2023</span>
+                </div>
+                <ul>
+                    <li>Provided IT support to about 30 users, on site and remotely via TeamViewer</li>
+                    <li>Troubleshot, installed and configured computers and software in Windows environments</li>
+                    <li>Created accounts, managed permissions and reset passwords in Active Directory</li>
+                    <li>Received, prioritised and followed up tickets in Jira from registration to closure</li>
+                    <li>Handled unemployment benefit claims (80%)</li>
+                </ul>
+            </article>
+        </section>
+
+        <section aria-labelledby="projects-heading">
+            <h2 id="projects-heading">Projects</h2>
+
+            <article class="cv-entry">
+                <div class="cv-entry-head">
+                    <h3>Portfolio website<span class="row-sub">yasva.github.io</span></h3>
+                    <span class="row-meta">HTML · CSS · JavaScript</span>
+                </div>
+                <ul>
+                    <li>Single-page portfolio with a Dark/Light/Auto theme picker, deployed with GitHub Pages</li>
+                </ul>
+            </article>
+
+            <article class="cv-entry">
+                <div class="cv-entry-head">
+                    <h3>Conway’s Game of Life<span class="row-sub">Course project, Mid Sweden University</span></h3>
+                    <span class="row-meta">Python</span>
+                </div>
+                <ul>
+                    <li>Terminal simulation with configurable world size, seed patterns loaded from file, logging
+                        and cell aging</li>
+                    <!-- TODO(Yas): add "Covered by pytest unit tests" and a repo link once the code is public -->
+                </ul>
+            </article>
+            <!-- TODO(Yas): add the next project here (name, link, stack, one line on what you built) -->
+        </section>
+
+        <section aria-labelledby="skills-heading">
+            <h2 id="skills-heading">Technical skills</h2>
+            <dl class="project-facts cv-skills">
+                <div>
+                    <dt>Support</dt>
+                    <dd>Windows, Active Directory, Microsoft 365, Jira, TeamViewer</dd>
+                </div>
+                <div>
+                    <dt>OS</dt>
+                    <dd>Windows, Linux (Ubuntu), macOS (basic)</dd>
+                </div>
+                <div>
+                    <dt>Network</dt>
+                    <dd>Basic: IP, DNS, client/server</dd>
+                </div>
+                <div>
+                    <dt>Code</dt>
+                    <dd>C#, JavaScript (course level) · HTML, CSS</dd>
+                </div>
+                <div>
+                    <dt>Tools</dt>
+                    <dd>Git, GitHub, VS Code</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section aria-labelledby="education-heading">
+            <h2 id="education-heading">Education</h2>
+
+            <article class="cv-entry">
+                <div class="cv-entry-head">
+                    <h3>B.Sc. Software Engineering, 180 credits<span class="row-sub">Mid Sweden University
+                            (distance)</span></h3>
+                    <span class="row-meta">Sep 2024 – Jun 2027</span>
+                </div>
+                <p class="cv-note">
+                    105 credits completed. Relevant courses: Computer Communication and Networks with Linux,
+                    Operating Systems, Software Security, Databases.
+                </p>
+            </article>
+
+            <article class="cv-entry">
+                <div class="cv-entry-head">
+                    <h3>Bachelor’s degree in Gender Studies, 180 credits<span class="row-sub">Lund
+                            University</span></h3>
+                    <span class="row-meta">Aug 2011 – Jun 2014</span>
+                </div>
+            </article>
+        </section>
+
+        <section aria-labelledby="languages-heading">
+            <h2 id="languages-heading">Languages &amp; other</h2>
+            <p>
+                Persian (native) · Swedish (fluent) · English (fluent) · Dari (good, spoken)<br />
+                Driving licence (B)
+            </p>
+        </section>
+
+        <footer class="site-footer no-print">
+            <p><a class="text-link" href="./">← Back to yasva.github.io</a></p>
+        </footer>
+
+    </main>
+
+    <script src="js/theme.js" defer></script>
+    <script>
+        document.getElementById('print-cv').addEventListener('click', () => window.print());
+    </script>
+
+</body>
+
+</html>
