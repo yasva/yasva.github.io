@@ -34,6 +34,12 @@ on:
         description: Space-separated Semgrep rulesets or local rule files.
         type: string
         default: "p/default"
+      semgrep-exclude-rules:
+        description: >-
+          Newline-separated Semgrep rule IDs to turn off for this repo. Every
+          entry should have a comment in the caller saying why.
+        type: string
+        default: ""
       image:
         description: >-
           Optional container image to scan with Trivy and Syft, as a registry
@@ -171,6 +177,7 @@ jobs:
         env:
           EXCLUDE_PATHS: ${{ inputs.exclude-paths }}
           SEMGREP_CONFIG: ${{ inputs.semgrep-config }}
+          EXCLUDE_RULES: ${{ inputs.semgrep-exclude-rules }}
         run: |
           mkdir -p "$RUNNER_TEMP/out"
           args=()
@@ -179,6 +186,10 @@ jobs:
             p="${p#./}"; p="${p%/}"
             [ -n "$p" ] && args+=(--exclude "$p")
           done <<< "$EXCLUDE_PATHS"
+          while IFS= read -r r; do
+            r="${r%%#*}"; r="${r//[[:space:]]/}"
+            [ -n "$r" ] && args+=(--exclude-rule "$r")
+          done <<< "$EXCLUDE_RULES"
           # Without --error, Semgrep exits 0 even with findings, so a non-zero
           # exit here means the scan itself broke (e.g. rules failed to load).
           # The Gate step decides on findings.
@@ -192,13 +203,19 @@ jobs:
         id: count
         run: |
           f="$RUNNER_TEMP/out/semgrep.sarif"
-          total=$(jq '[.runs[].results[]] | length' "$f")
-          blocking=$(jq '[.runs[].results[] | select(.level == "error")] | length' "$f")
+          # Semgrep's SARIF leaves `level` off each result and puts the
+          # severity on the rule instead (defaultConfiguration.level), so look
+          # it up there. Counting `.results[].level` alone gives 0 blocking
+          # findings forever, a gate that can never fail.
+          jq '[.runs[] | (.tool.driver.rules // [] | map({key: .id, value: (.defaultConfiguration.level // "warning")}) | from_entries) as $lvl
+               | .results[] | . + {level: (.level // $lvl[.ruleId] // "warning")}]' "$f" > "$RUNNER_TEMP/out/semgrep-results.json"
+          total=$(jq 'length' "$RUNNER_TEMP/out/semgrep-results.json")
+          blocking=$(jq '[.[] | select(.level == "error")] | length' "$RUNNER_TEMP/out/semgrep-results.json")
           echo "total=$total" >> "$GITHUB_OUTPUT"
           echo "blocking=$blocking" >> "$GITHUB_OUTPUT"
           {
             echo "### Semgrep: $blocking blocking (ERROR) of $total finding(s)"
-            jq -r '.runs[].results[] | "- `\(.level)` \(.ruleId) at \(.locations[0].physicalLocation.artifactLocation.uri):\(.locations[0].physicalLocation.region.startLine)"' "$f"
+            jq -r '.[] | "- `\(.level)` \(.ruleId) at \(.locations[0].physicalLocation.artifactLocation.uri):\(.locations[0].physicalLocation.region.startLine)"' "$RUNNER_TEMP/out/semgrep-results.json"
           } | tee -a "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

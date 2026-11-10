@@ -41,6 +41,7 @@ jobs:
         env:
           GITLEAKS: ${{ needs.scan-fixtures.outputs.gitleaks-findings }}
           SEMGREP: ${{ needs.scan-fixtures.outputs.semgrep-findings }}
+          SEMGREP_BLOCKING: ${{ needs.scan-fixtures.outputs.semgrep-blocking }}
           TRIVY: ${{ needs.scan-fixtures.outputs.trivy-findings }}
           TRIVY_BLOCKING: ${{ needs.scan-fixtures.outputs.trivy-blocking }}
           SBOM: ${{ needs.scan-fixtures.outputs.sbom-packages }}
@@ -55,6 +56,9 @@ jobs:
           }
           check gitleaks-findings "$GITLEAKS"
           check semgrep-findings "$SEMGREP"
+          # Checks the gate, not only the scanner: an earlier version counted
+          # Semgrep's severity from the wrong SARIF field and could never block.
+          check semgrep-blocking "$SEMGREP_BLOCKING"
           check trivy-findings "$TRIVY"
           check trivy-blocking "$TRIVY_BLOCKING"
           check sbom-packages "$SBOM"
