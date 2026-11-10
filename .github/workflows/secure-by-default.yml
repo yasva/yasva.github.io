@@ -199,7 +199,7 @@ jobs:
           {
             echo "### Semgrep: $blocking blocking (ERROR) of $total finding(s)"
             jq -r '.runs[].results[] | "- `\(.level)` \(.ruleId) at \(.locations[0].physicalLocation.artifactLocation.uri):\(.locations[0].physicalLocation.region.startLine)"' "$f"
-          } >> "$GITHUB_STEP_SUMMARY"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
@@ -271,6 +271,8 @@ jobs:
         run: |
           total=$(cat "$RUNNER_TEMP"/out/trivy-*.sarif | jq -s '[.[].runs[].results[]] | length')
           echo "total=$total" >> "$GITHUB_OUTPUT"
+          # Full list in the log; the job summary only lists what blocks.
+          cat "$RUNNER_TEMP"/out/trivy-*.sarif | jq -rs '.[].runs[].results[] | "\(.level) \(.ruleId) \(.locations[0].physicalLocation.artifactLocation.uri)"' 
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
@@ -303,7 +305,7 @@ jobs:
           {
             echo "### Trivy: $blocking blocking (fixable HIGH/CRITICAL) of ${{ steps.count.outputs.total }} finding(s)"
             cat "$RUNNER_TEMP"/out/gate-*.json | jq -rs '.[].Results[]? | .Target as $t | .Vulnerabilities[]? | "- `\(.Severity)` \(.VulnerabilityID) in \(.PkgName) \(.InstalledVersion) (fixed in \(.FixedVersion)) at \($t)"'
-          } >> "$GITHUB_STEP_SUMMARY"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
           if [ "$FAIL" = "true" ] && [ "$blocking" != "0" ]; then
             echo "::error::Trivy found $blocking fixable HIGH/CRITICAL vulnerabilit(y/ies). Upgrade to the fixed version listed in the job summary."
             exit 1
@@ -335,7 +337,7 @@ jobs:
             [ -n "$p" ] && args+=(--exclude "./$p/**")
           done <<< "$EXCLUDE_PATHS"
           docker run --rm --network none --user "$(id -u):$(id -g)" -e HOME=/tmp \
-            -e SYFT_CHECK_FOR_APP_UPDATE=false \
+            --tmpfs /tmp:rw,mode=1777 -e SYFT_CHECK_FOR_APP_UPDATE=false \
             -v "$PWD:/src:ro" -v "$RUNNER_TEMP/sbom:/out" \
             "$SYFT_IMAGE" scan dir:/src "${args[@]}" \
               --source-name "$GITHUB_REPOSITORY" --source-version "$GITHUB_SHA" \
@@ -349,7 +351,7 @@ jobs:
         if: env.IMAGE != ''
         run: |
           docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
-            -e SYFT_CHECK_FOR_APP_UPDATE=false \
+            --tmpfs /tmp:rw,mode=1777 -e SYFT_CHECK_FOR_APP_UPDATE=false \
             -v "$RUNNER_TEMP/sbom:/out" \
             "$SYFT_IMAGE" scan "registry:$IMAGE" \
               -o "spdx-json=/out/sbom-image.spdx.json" \
