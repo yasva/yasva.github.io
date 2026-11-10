@@ -27,3 +27,7 @@ jobs:
     with:
       exclude-paths: |
         .github/security-selftest
+      # Each rule turned off here needs a reason in security/TRADEOFFS.md.
+      semgrep-exclude-rules: |
+        # 4/4 false positives on canonical links and data: URIs (TRADEOFFS.md 2a)
+        html.security.audit.missing-integrity.missing-integrity
