@@ -1,0 +1,416 @@
+# Reusable "secure-by-default" security pipeline.
+#
+# Call it from any repository:
+#
+#   jobs:
+#     security:
+#       uses: yasva/yasva.github.io/.github/workflows/secure-by-default.yml@<commit-sha>
+#       permissions:
+#         contents: read
+#         security-events: write
+#
+# Design notes (the "why" lives in security/README.md and security/TRADEOFFS.md):
+# - GitHub-owned actions are pinned to a full commit SHA. Third-party scanners
+#   run as container images pinned by digest, not as third-party actions.
+# - Scanner jobs only get `contents: read`. The one job that can write
+#   (SARIF upload) runs nothing but GitHub's own upload action.
+# - Scanners run with a read-only mount of the code and get no GITHUB_TOKEN.
+#   gitleaks and Syft also run with no network at all.
+# - Inputs never go straight into `run:` scripts; they pass through env vars
+#   so a crafted input cannot inject shell commands.
+
+name: secure-by-default
+
+on:
+  workflow_call:
+    inputs:
+      exclude-paths:
+        description: >-
+          Newline-separated path prefixes (relative to the repo root) that all
+          scanners skip, e.g. test fixtures or vendored code.
+        type: string
+        default: ""
+      semgrep-config:
+        description: Space-separated Semgrep rulesets or local rule files.
+        type: string
+        default: "p/default"
+      image:
+        description: >-
+          Optional container image to scan with Trivy and Syft, as a registry
+          reference the runner can pull (pin it by digest).
+        type: string
+        default: ""
+      fail-on-findings:
+        description: >-
+          Fail the run on blocking findings. Set to false only for the
+          pipeline's own self-test.
+        type: boolean
+        default: true
+      upload-sarif:
+        description: Upload results to GitHub code scanning (Security tab and PR annotations).
+        type: boolean
+        default: true
+    outputs:
+      gitleaks-findings:
+        description: Number of secrets found (all are blocking).
+        value: ${{ jobs.gitleaks.outputs.total }}
+      semgrep-findings:
+        description: Number of Semgrep findings at any severity.
+        value: ${{ jobs.semgrep.outputs.total }}
+      semgrep-blocking:
+        description: Number of Semgrep findings with ERROR severity.
+        value: ${{ jobs.semgrep.outputs.blocking }}
+      trivy-findings:
+        description: Number of Trivy findings at any severity (repo and image).
+        value: ${{ jobs.trivy.outputs.total }}
+      trivy-blocking:
+        description: Number of HIGH/CRITICAL vulnerabilities that have a fix available.
+        value: ${{ jobs.trivy.outputs.blocking }}
+      sbom-packages:
+        description: Number of packages Syft found in the repository.
+        value: ${{ jobs.sbom.outputs.packages }}
+
+# Single place to bump scanner versions. Each image is pinned by digest; the
+# tag is only there for humans. Versions are chosen at least a week after
+# release (a "cooldown"), so a hijacked release has time to be caught first.
+env:
+  GITLEAKS_IMAGE: ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+  SEMGREP_IMAGE: docker.io/semgrep/semgrep:1.183.0@sha256:2e45517a85e13a9cca14a2a00df6bb48affd66b8ebfae1b0991cd57578362fb0
+  TRIVY_IMAGE: ghcr.io/aquasecurity/trivy:0.76.1@sha256:790fd66d1697395d8693d1acaa1ea702406a20f109b6fc7bac8db623eca6c06c
+  SYFT_IMAGE: ghcr.io/anchore/syft:v1.56.0@sha256:697ae864af1299cfa43c54b161cea3dd65c6d54de82e3dba66ea3dccb3acc313
+
+permissions: {}
+
+jobs:
+  gitleaks:
+    name: Secrets (gitleaks)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      total: ${{ steps.count.outputs.total }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # full history: a secret deleted in a later commit is still leaked
+          persist-credentials: false
+
+      - name: Build gitleaks config (repo config + exclude-paths)
+        env:
+          EXCLUDE_PATHS: ${{ inputs.exclude-paths }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/out"
+          cfg="$RUNNER_TEMP/out/gitleaks.toml"
+          {
+            echo 'title = "secure-by-default"'
+            echo '[extend]'
+            if [ -f .gitleaks.toml ]; then
+              echo 'path = "/src/.gitleaks.toml"'
+            else
+              echo 'useDefault = true'
+            fi
+          } > "$cfg"
+          paths=""
+          while IFS= read -r p; do
+            p="${p#./}"; p="${p%/}"
+            [ -z "$p" ] && continue
+            esc=$(printf '%s' "$p" | sed 's/[.[\*^$()+?{|]/\\&/g')
+            paths="${paths}'''^${esc}/''',"
+          done <<< "$EXCLUDE_PATHS"
+          if [ -n "$paths" ]; then
+            printf '[[allowlists]]\ndescription = "exclude-paths input"\npaths = [%s]\n' "${paths%,}" >> "$cfg"
+          fi
+          cat "$cfg"
+
+      - name: Run gitleaks (offline, read-only)
+        run: |
+          docker run --rm --network none --user "$(id -u):$(id -g)" \
+            -v "$PWD:/src:ro" -v "$RUNNER_TEMP/out:/out" -w /src \
+            "$GITLEAKS_IMAGE" git /src \
+              --config /out/gitleaks.toml \
+              --redact --no-banner --exit-code 0 \
+              --report-format sarif --report-path /out/gitleaks.sarif
+
+      - name: Count findings
+        id: count
+        run: |
+          total=$(jq '[.runs[].results[]] | length' "$RUNNER_TEMP/out/gitleaks.sarif")
+          echo "total=$total" >> "$GITHUB_OUTPUT"
+          echo "### gitleaks: $total secret(s) found" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: sarif-gitleaks
+          path: ${{ runner.temp }}/out/gitleaks.sarif
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Gate
+        if: inputs.fail-on-findings && steps.count.outputs.total != '0'
+        run: |
+          echo "::error::gitleaks found ${{ steps.count.outputs.total }} secret(s). Rotate the secret first, then remove it. See security/README.md."
+          exit 1
+
+  semgrep:
+    name: SAST (Semgrep)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      total: ${{ steps.count.outputs.total }}
+      blocking: ${{ steps.count.outputs.blocking }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run Semgrep (read-only, metrics off)
+        env:
+          EXCLUDE_PATHS: ${{ inputs.exclude-paths }}
+          SEMGREP_CONFIG: ${{ inputs.semgrep-config }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/out"
+          args=()
+          for c in $SEMGREP_CONFIG; do args+=(--config "$c"); done
+          while IFS= read -r p; do
+            p="${p#./}"; p="${p%/}"
+            [ -n "$p" ] && args+=(--exclude "$p")
+          done <<< "$EXCLUDE_PATHS"
+          # Without --error, Semgrep exits 0 even with findings, so a non-zero
+          # exit here means the scan itself broke (e.g. rules failed to load).
+          # The Gate step decides on findings.
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$PWD:/src:ro" -v "$RUNNER_TEMP/out:/out" -w /src \
+            "$SEMGREP_IMAGE" semgrep scan "${args[@]}" \
+              --metrics=off --disable-version-check \
+              --sarif --output /out/semgrep.sarif
+
+      - name: Count findings
+        id: count
+        run: |
+          f="$RUNNER_TEMP/out/semgrep.sarif"
+          total=$(jq '[.runs[].results[]] | length' "$f")
+          blocking=$(jq '[.runs[].results[] | select(.level == "error")] | length' "$f")
+          echo "total=$total" >> "$GITHUB_OUTPUT"
+          echo "blocking=$blocking" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Semgrep: $blocking blocking (ERROR) of $total finding(s)"
+            jq -r '.runs[].results[] | "- `\(.level)` \(.ruleId) at \(.locations[0].physicalLocation.artifactLocation.uri):\(.locations[0].physicalLocation.region.startLine)"' "$f"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: sarif-semgrep
+          path: ${{ runner.temp }}/out/semgrep.sarif
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Gate
+        if: inputs.fail-on-findings && steps.count.outputs.blocking != '0'
+        run: |
+          echo "::error::Semgrep found ${{ steps.count.outputs.blocking }} ERROR-level finding(s). WARNING/INFO findings are reported but do not block."
+          exit 1
+
+  trivy:
+    name: Dependencies and containers (Trivy)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      total: ${{ steps.count.outputs.total }}
+      blocking: ${{ steps.gate.outputs.blocking }}
+    env:
+      EXCLUDE_PATHS: ${{ inputs.exclude-paths }}
+      IMAGE: ${{ inputs.image }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Prepare
+        run: |
+          mkdir -p "$RUNNER_TEMP/out" "$RUNNER_TEMP/trivy-cache"
+          skip=()
+          while IFS= read -r p; do
+            p="${p#./}"; p="${p%/}"
+            [ -n "$p" ] && skip+=(--skip-dirs "$p")
+          done <<< "$EXCLUDE_PATHS"
+          # Save the args for later steps (one per line; empty file if none).
+          : > "$RUNNER_TEMP/out/trivy-skip.args"
+          if [ ${#skip[@]} -gt 0 ]; then printf '%s\n' "${skip[@]}" > "$RUNNER_TEMP/out/trivy-skip.args"; fi
+
+      # Report everything MEDIUM and up, so nothing is hidden from the Security tab.
+      # Secret scanning is off here: gitleaks owns secrets, and two tools
+      # reporting the same leak only doubles the noise.
+      - name: Scan repository (report)
+        run: |
+          mapfile -t skip < "$RUNNER_TEMP/out/trivy-skip.args"
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$PWD:/src:ro" -v "$RUNNER_TEMP/out:/out" -v "$RUNNER_TEMP/trivy-cache:/cache" -w /src \
+            "$TRIVY_IMAGE" fs . --cache-dir /cache --quiet \
+              --scanners vuln,misconfig "${skip[@]}" \
+              --severity MEDIUM,HIGH,CRITICAL \
+              --format sarif --output /out/trivy-fs.sarif
+
+      - name: Scan image (report)
+        if: env.IMAGE != ''
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$RUNNER_TEMP/out:/out" -v "$RUNNER_TEMP/trivy-cache:/cache" \
+            "$TRIVY_IMAGE" image "$IMAGE" --cache-dir /cache --quiet \
+              --scanners vuln --severity MEDIUM,HIGH,CRITICAL \
+              --format sarif --output /out/trivy-image.sarif
+
+      - name: Count findings
+        id: count
+        run: |
+          total=$(cat "$RUNNER_TEMP"/out/trivy-*.sarif | jq -s '[.[].runs[].results[]] | length')
+          echo "total=$total" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: sarif-trivy
+          path: ${{ runner.temp }}/out/trivy-*.sarif
+          if-no-files-found: ignore
+          retention-days: 14
+
+      # The gate is narrower than the report: only HIGH/CRITICAL vulnerabilities
+      # that already have a fixed version. A failure you cannot act on teaches
+      # people to ignore (or remove) the pipeline. .trivyignore in the repo root
+      # is honoured, and entries can carry an expiry date (exp:YYYY-MM-DD).
+      - name: Gate (HIGH/CRITICAL with a fix available)
+        id: gate
+        env:
+          FAIL: ${{ inputs.fail-on-findings }}
+        run: |
+          mapfile -t skip < "$RUNNER_TEMP/out/trivy-skip.args"
+          run_trivy() {
+            docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+              -v "$PWD:/src:ro" -v "$RUNNER_TEMP/out:/out" -v "$RUNNER_TEMP/trivy-cache:/cache" -w /src \
+              "$TRIVY_IMAGE" "$@" --cache-dir /cache --quiet --skip-db-update \
+                --scanners vuln --ignore-unfixed --severity HIGH,CRITICAL --format json
+          }
+          run_trivy fs . "${skip[@]}" --output /out/gate-fs.json
+          if [ -n "$IMAGE" ]; then run_trivy image "$IMAGE" --output /out/gate-image.json; fi
+          blocking=$(cat "$RUNNER_TEMP"/out/gate-*.json | jq -s '[.[].Results[]?.Vulnerabilities[]?] | length')
+          echo "blocking=$blocking" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Trivy: $blocking blocking (fixable HIGH/CRITICAL) of ${{ steps.count.outputs.total }} finding(s)"
+            cat "$RUNNER_TEMP"/out/gate-*.json | jq -rs '.[].Results[]? | .Target as $t | .Vulnerabilities[]? | "- `\(.Severity)` \(.VulnerabilityID) in \(.PkgName) \(.InstalledVersion) (fixed in \(.FixedVersion)) at \($t)"'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$FAIL" = "true" ] && [ "$blocking" != "0" ]; then
+            echo "::error::Trivy found $blocking fixable HIGH/CRITICAL vulnerabilit(y/ies). Upgrade to the fixed version listed in the job summary."
+            exit 1
+          fi
+
+  sbom:
+    name: SBOM (Syft)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      packages: ${{ steps.sbom.outputs.packages }}
+    env:
+      EXCLUDE_PATHS: ${{ inputs.exclude-paths }}
+      IMAGE: ${{ inputs.image }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Generate SBOM (offline, read-only)
+        id: sbom
+        run: |
+          mkdir -p "$RUNNER_TEMP/sbom"
+          args=()
+          while IFS= read -r p; do
+            p="${p#./}"; p="${p%/}"
+            [ -n "$p" ] && args+=(--exclude "./$p/**")
+          done <<< "$EXCLUDE_PATHS"
+          docker run --rm --network none --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -e SYFT_CHECK_FOR_APP_UPDATE=false \
+            -v "$PWD:/src:ro" -v "$RUNNER_TEMP/sbom:/out" \
+            "$SYFT_IMAGE" scan dir:/src "${args[@]}" \
+              --source-name "$GITHUB_REPOSITORY" --source-version "$GITHUB_SHA" \
+              -o "spdx-json=/out/sbom-repo.spdx.json" \
+              -o "cyclonedx-json=/out/sbom-repo.cdx.json"
+          packages=$(jq '.components // [] | length' "$RUNNER_TEMP/sbom/sbom-repo.cdx.json")
+          echo "packages=$packages" >> "$GITHUB_OUTPUT"
+          echo "### Syft: $packages package(s) in the repository SBOM" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate image SBOM
+        if: env.IMAGE != ''
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -e SYFT_CHECK_FOR_APP_UPDATE=false \
+            -v "$RUNNER_TEMP/sbom:/out" \
+            "$SYFT_IMAGE" scan "registry:$IMAGE" \
+              -o "spdx-json=/out/sbom-image.spdx.json" \
+              -o "cyclonedx-json=/out/sbom-image.cdx.json"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: sbom
+          path: ${{ runner.temp }}/sbom/
+          retention-days: 90
+
+  report:
+    name: Upload to code scanning
+    needs: [gitleaks, semgrep, trivy]
+    # Runs even when a gate failed, so the findings still reach the Security tab.
+    # Skipped for pull requests from forks: their token cannot write security events.
+    if: >-
+      always() && inputs.upload-sarif &&
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: sarif-*
+          path: sarif
+
+      - name: Upload gitleaks results
+        if: hashFiles('sarif/sarif-gitleaks/*.sarif') != ''
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: sarif/sarif-gitleaks
+          category: gitleaks
+
+      - name: Upload Semgrep results
+        if: hashFiles('sarif/sarif-semgrep/*.sarif') != ''
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: sarif/sarif-semgrep
+          category: semgrep
+
+      # One upload per category: code scanning rejects several runs of the
+      # same tool under one category.
+      - name: Upload Trivy repository results
+        if: hashFiles('sarif/sarif-trivy/trivy-fs.sarif') != ''
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: sarif/sarif-trivy/trivy-fs.sarif
+          category: trivy-repo
+
+      - name: Upload Trivy image results
+        if: hashFiles('sarif/sarif-trivy/trivy-image.sarif') != ''
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: sarif/sarif-trivy/trivy-image.sarif
+          category: trivy-image

@@ -1,0 +1,14 @@
+version: 2
+updates:
+  # Keeps the SHA-pinned actions current. Dependabot rewrites both the SHA and
+  # the "# vX.Y.Z" comment. Container image digests inside `run:` steps are not
+  # covered and are bumped by hand (see security/TRADEOFFS.md).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]

@@ -1,0 +1,11 @@
+# Changes to the security pipeline, its exceptions and its fixtures need the
+# owner's review. With branch protection "Require review from Code Owners",
+# nobody can quietly weaken a scanner or add an ignore rule in the same PR
+# that would otherwise fail.
+/.github/workflows/      @yasva
+/.github/CODEOWNERS      @yasva
+/.github/security-selftest/ @yasva
+/.gitleaks.toml          @yasva
+/.gitleaksignore         @yasva
+/.trivyignore            @yasva
+/.semgrepignore          @yasva

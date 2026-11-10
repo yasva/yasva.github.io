@@ -1,0 +1,29 @@
+# Runs the reusable secure-by-default pipeline on this repository.
+name: security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    # Weekly, because new CVEs are published against code that has not changed.
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    # Same repo, so a local path. Another repo would use
+    # yasva/yasva.github.io/.github/workflows/secure-by-default.yml@<commit-sha>
+    uses: ./.github/workflows/secure-by-default.yml
+    permissions:
+      contents: read
+      security-events: write # only the SARIF upload job uses this
+    with:
+      exclude-paths: |
+        .github/security-selftest
