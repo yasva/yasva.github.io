@@ -1,0 +1,65 @@
+# Proves each scanner still catches something, by scanning deliberately
+# insecure fixtures in .github/security-selftest/. If a version bump, a bad
+# exclude rule or a broken ruleset makes a scanner go blind, this fails,
+# instead of the main pipeline silently turning green.
+name: security-selftest
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/secure-by-default.yml"
+      - ".github/workflows/security-selftest.yml"
+      - ".github/security-selftest/**"
+  schedule:
+    - cron: "41 5 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  scan-fixtures:
+    uses: ./.github/workflows/secure-by-default.yml
+    permissions:
+      contents: read
+      # Required because the called workflow declares it on its upload job,
+      # even though upload-sarif is false here and that job is skipped.
+      security-events: write
+    with:
+      exclude-paths: "" # scan everything, fixtures included
+      fail-on-findings: false
+      upload-sarif: false # keep fixture alerts out of the Security tab
+      # An old Alpine release with known vulnerabilities, pinned by digest.
+      image: docker.io/library/alpine:3.10.0@sha256:ca1c944a4f8486a153024d9965aafbe24f5723c1d5c02f4964c045a16d19dc54
+
+  assert:
+    needs: scan-fixtures
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Every scanner must have found something
+        env:
+          GITLEAKS: ${{ needs.scan-fixtures.outputs.gitleaks-findings }}
+          SEMGREP: ${{ needs.scan-fixtures.outputs.semgrep-findings }}
+          SEMGREP_BLOCKING: ${{ needs.scan-fixtures.outputs.semgrep-blocking }}
+          TRIVY: ${{ needs.scan-fixtures.outputs.trivy-findings }}
+          TRIVY_BLOCKING: ${{ needs.scan-fixtures.outputs.trivy-blocking }}
+          SBOM: ${{ needs.scan-fixtures.outputs.sbom-packages }}
+        run: |
+          fail=0
+          check() {
+            if [ "${2:-0}" -gt 0 ] 2>/dev/null; then
+              echo "ok   $1 = $2"
+            else
+              echo "::error::$1 expected > 0, got '${2}'"; fail=1
+            fi
+          }
+          check gitleaks-findings "$GITLEAKS"
+          check semgrep-findings "$SEMGREP"
+          # Checks the gate, not only the scanner: an earlier version counted
+          # Semgrep's severity from the wrong SARIF field and could never block.
+          check semgrep-blocking "$SEMGREP_BLOCKING"
+          check trivy-findings "$TRIVY"
+          check trivy-blocking "$TRIVY_BLOCKING"
+          check sbom-packages "$SBOM"
+          exit $fail
