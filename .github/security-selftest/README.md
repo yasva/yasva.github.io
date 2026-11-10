@@ -1,7 +1,7 @@
 # Self-test fixtures (deliberately insecure)
 
 Everything in this folder is **intentionally wrong**. It exists so the
-`selftest` job in `.github/workflows/security.yml` can prove that each
+`security-selftest` workflow (`.github/workflows/security-selftest.yml`) can prove that each
 scanner still detects something. A security control you have never seen
 fail is a control you have not tested.
 
