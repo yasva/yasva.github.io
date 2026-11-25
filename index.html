@@ -93,6 +93,53 @@
 
             <article class="project">
                 <figure class="project-media">
+                    <img src="images/lekh-equipment.png" width="877" height="612" loading="lazy"
+                        alt="LEKH equipment list showing an Arduino, a logic analyzer, an oscilloscope and a Raspberry Pi with location and availability">
+                </figure>
+                <div class="project-text">
+                    <h3>LEKH – Lab Equipment Knowledge Hub</h3>
+                    <p class="byline">Blekinge Institute of Technology · Customer project, three sprints</p>
+                    <dl class="project-facts">
+                        <div>
+                            <dt>Problem</dt>
+                            <dd>
+                                A shared student lab had no central place for how to set up, borrow and fix its
+                                equipment, and that knowledge was lost when staff changed.
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>My role</dt>
+                            <dd>
+                                Sole developer. Turned the customer’s wish list into a prioritised requirements
+                                specification over two meetings, then built it in three sprints with demos.
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Built</dt>
+                            <dd>
+                                Equipment guides and troubleshooting, search, loan requests with approval, returns
+                                and fault reporting. Three roles, with access checked on the server for every API
+                                route and bcrypt-hashed passwords.
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Result</dt>
+                            <dd>Accepted by the customer. All 13 acceptance tests passed from a fresh install.</dd>
+                        </div>
+                        <div>
+                            <dt>Stack</dt>
+                            <dd>React · Node.js / Express · PostgreSQL · Prisma</dd>
+                        </div>
+                    </dl>
+                    <p>
+                        <a class="text-link" href="https://github.com/yasva/lekh" target="_blank"
+                            rel="noopener noreferrer">Source and screenshots on GitHub ↗</a>
+                    </p>
+                </div>
+            </article>
+
+            <article class="project">
+                <figure class="project-media">
                     <!-- Live preview of the rules the project implements. TODO(Yas): replace with a screenshot or GIF of your own program running -->
                     <canvas id="life" width="1200" height="675" role="img"
                         aria-label="Animated grid of Conway's Game of Life cells"></canvas>
