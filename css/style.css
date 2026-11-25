@@ -542,3 +542,56 @@ button.button {
         gap: 0.1rem;
     }
 }
+
+/* Project card links and the LEKH case study page */
+
+.stack {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+}
+
+.project-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+}
+
+.case section {
+    margin-top: 3rem;
+}
+
+.case .project-media {
+    margin-bottom: 1.5rem;
+}
+
+.case-quote {
+    margin: 2rem 0 0;
+    padding-left: 1.25rem;
+    border-left: 2px solid var(--accent);
+}
+
+.case-quote p {
+    margin: 0 0 0.5rem;
+}
+
+.case-quote footer {
+    color: var(--ink-muted);
+    font-size: 0.9rem;
+}
+
+.case-list {
+    padding-left: 1.1rem;
+}
+
+.case-list li {
+    margin-bottom: 0.4rem;
+}
+
+.case-shots {
+    margin-top: 1.5rem;
+}
+
+.case .intro-actions {
+    margin-bottom: 2rem;
+}

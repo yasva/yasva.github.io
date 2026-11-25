@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LEKH case study | Yasaman Vallaee</title>
+    <meta name="description"
+        content="LEKH, a full-stack lab equipment knowledge hub built for a customer: the problem, my role, what I built, how access control works and what I would change." />
+    <link rel="canonical" href="https://yasva.github.io/lekh" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://yasva.github.io/lekh" />
+    <meta property="og:title" content="LEKH case study | Yasaman Vallaee" />
+    <meta property="og:description"
+        content="A full-stack lab equipment knowledge hub built for a customer in three sprints. React, Express, PostgreSQL." />
+    <meta name="twitter:card" content="summary" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#1a1e23" />
+
+    <!-- Apply the saved theme before first paint so the page doesn't flash -->
+    <script>
+        (function () {
+            let choice = 'auto';
+            try { choice = localStorage.getItem('theme') || 'auto'; } catch (e) { }
+            const light = choice === 'light' ||
+                (choice === 'auto' && window.matchMedia('(prefers-color-scheme: light)').matches);
+            document.documentElement.dataset.theme = light ? 'light' : 'dark';
+        })();
+    </script>
+
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%2312f7d6'/%3E%3Ctext x='32' y='41' font-family='Arial,sans-serif' font-size='26' font-weight='700' fill='%231a1e23' text-anchor='middle'%3EYV%3C/text%3E%3C/svg%3E" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+
+<body>
+
+    <main class="page case">
+
+        <header class="intro">
+            <div class="intro-top">
+                <a class="avatar back-link" href="./" aria-label="Back to home page">← &lt;YV/&gt;</a>
+                <label class="theme-select">
+                    <svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <!-- Path is swapped by js/theme.js to match the choice -->
+                        <path d="M3 5h18v11H3zM1 19h22"></path>
+                    </svg>
+                    <select id="theme" aria-label="Color theme">
+                        <option value="dark">Dark</option>
+                        <option value="light">Light</option>
+                        <option value="auto" selected>Auto</option>
+                    </select>
+                    <svg class="theme-chevron" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 9l6 6 6-6"></path>
+                    </svg>
+                </label>
+            </div>
+
+            <h1>LEKH – Lab Equipment Knowledge Hub</h1>
+            <p class="lede">
+                A full-stack web app that gives a shared student lab one place for equipment guides, loans and
+                fault reporting. Built for a customer in three sprints at Blekinge Institute of Technology,
+                autumn 2026. I was the only developer.
+            </p>
+
+            <dl class="facts">
+                <div><dt>Result</dt><dd>Accepted by the customer, 21 Oct 2026</dd></div>
+                <div><dt>Tests</dt><dd>13 of 13 acceptance tests passed</dd></div>
+                <div><dt>Stack</dt><dd>React · Express · PostgreSQL · Prisma</dd></div>
+            </dl>
+
+            <p class="intro-actions">
+                <a class="button" href="https://github.com/yasva/lekh" target="_blank"
+                    rel="noopener noreferrer">Code on GitHub ↗</a>
+            </p>
+        </header>
+
+        <figure class="project-media">
+            <img src="images/lekh-equipment.png" width="877" height="612"
+                alt="LEKH equipment list showing an Arduino, a logic analyzer, an oscilloscope and a Raspberry Pi with location and availability">
+        </figure>
+
+        <blockquote class="case-quote">
+            <p>
+                “Yasaman started with what I had said mattered most rather than what was easiest and had
+                equipment guides in place in the first sprint while most others were still building inventory
+                lists. The finished solution did what I had asked for, project library included, which was the
+                part most people left out.”
+            </p>
+            <footer>Zeth Danielsson, customer representative (translated from Swedish)</footer>
+        </blockquote>
+
+        <section aria-labelledby="problem-heading">
+            <h2 id="problem-heading">The problem</h2>
+            <p>
+                The lab is full of Raspberry Pis, microcontrollers, sensor kits and 3D printers, but how to set
+                them up, what usually goes wrong and how to fix it lived in people’s heads. When the staff
+                responsible for the equipment changed, that knowledge was lost.
+            </p>
+            <p>
+                The customer’s first proposal asked for much more: a booking timeline, QR tags, consumables,
+                notifications and statistics. In two meetings we narrowed it down. Equipment knowledge came first,
+                then inventory, loans and fault reporting, and the customer asked for quality over a long feature
+                list.
+            </p>
+        </section>
+
+        <section aria-labelledby="role-heading">
+            <h2 id="role-heading">How I worked</h2>
+            <ul class="case-list">
+                <li>Wrote the requirements specification with the customer, through eight versions, with a table
+                    tracing each acceptance test to its requirements and backlog items.</li>
+                <li>Planned three sprints in GitHub Issues and a project board, with a demo to the customer after
+                    each sprint.</li>
+                <li>One branch per backlog item, merged through pull requests against a written Definition of
+                    Done.</li>
+                <li>Built the guides first, because that was the customer’s top priority, not the easiest part.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="built-heading">
+            <h2 id="built-heading">What it does</h2>
+            <dl class="project-facts">
+                <div>
+                    <dt>Student</dt>
+                    <dd>Search equipment, read setup guides and troubleshooting, request loans, return with a
+                        checklist, report faults, record projects that used the equipment.</dd>
+                </div>
+                <div>
+                    <dt>Maintainer</dt>
+                    <dd>All of that, plus managing equipment and units, writing troubleshooting entries, approving
+                        loans and resolving faults.</dd>
+                </div>
+                <div>
+                    <dt>Admin</dt>
+                    <dd>Everything a maintainer can do.</dd>
+                </div>
+            </dl>
+
+            <div class="case-shots">
+                <figure class="project-media">
+                    <img src="images/lekh-equipment-guide.png" width="885" height="730" loading="lazy"
+                        alt="Equipment guide with setup, usage and troubleshooting sections">
+                </figure>
+                <figure class="project-media">
+                    <img src="images/lekh-my-loans.png" width="903" height="330" loading="lazy"
+                        alt="Student view of a loan waiting for approval">
+                </figure>
+                <figure class="project-media">
+                    <img src="images/lekh-loan-requests.png" width="902" height="317" loading="lazy"
+                        alt="Maintainer view where loan requests are approved or rejected">
+                </figure>
+            </div>
+        </section>
+
+        <section aria-labelledby="security-heading">
+            <h2 id="security-heading">Access control and security</h2>
+            <p><strong>In place today</strong></p>
+            <ul class="case-list">
+                <li>Every API route except register, login and logout requires a signed-in session.</li>
+                <li>Maintainer and admin actions are checked on the server, not only hidden in the interface.</li>
+                <li>Students can’t see who has borrowed a unit.</li>
+                <li>Passwords are hashed with bcrypt, and sessions are kept on the server.</li>
+                <li>Secrets live in an untracked <code>.env</code> file, and I checked the git history for leaked
+                    secrets before making the repository public.</li>
+            </ul>
+            <p><strong>Gaps I found when I reviewed my own code</strong></p>
+            <ul class="case-list">
+                <li>The session ID isn’t renewed at login, which leaves room for session fixation.</li>
+                <li>Sessions use the default in-memory store, and the cookie isn’t set up for production
+                    (<code>secure</code>, <code>sameSite</code>).</li>
+                <li>There is no rate limit on login attempts.</li>
+                <li>The access rules are tested only by hand. No automated test proves them yet.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="next-heading">
+            <h2 id="next-heading">What I’m doing next</h2>
+            <p>
+                The course ended at customer acceptance. I’m continuing the project to make it production-ready:
+                fixing the gaps above, adding automated tests for the acceptance tests and every role rule, and
+                then deploying it to Azure with CI/CD.
+            </p>
+            <!-- TODO(Yas): update this section as each step ships, and link the live demo once it's up -->
+        </section>
+
+        <footer class="site-footer">
+            <p><a class="text-link" href="./">← Back to yasva.github.io</a></p>
+        </footer>
+
+    </main>
+
+    <script src="js/theme.js" defer></script>
+
+</body>
+
+</html>
